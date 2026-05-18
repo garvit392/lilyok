@@ -1,0 +1,2454 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lily — Discord's most powerful all-in-one app</title>
+<meta name="description" content="Lily is Discord's most powerful all-in-one app for seamless server management, automation, and community engagement." />
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgo=" id="favicon" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'] } } } };
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  body { background: radial-gradient(1200px 600px at 50% -100px, rgba(236,72,153,.18), transparent 60%), #0a0a0a; color:#fafafa; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+  .glow { box-shadow: 0 0 40px rgba(236,72,153,.35); }
+  .grad-text { background: linear-gradient(90deg,#f9a8d4 0%,#c084fc 50%,#60a5fa 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .card { background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border: 1px solid rgba(255,255,255,.06); transition: all .25s ease; }
+  .card:hover { border-color: rgba(236,72,153,.35); transform: translateY(-2px); }
+  .btn-primary { background: linear-gradient(90deg,#ec4899,#c084fc); }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .nav-blur { backdrop-filter: blur(12px); background: rgba(10,10,10,.6); }
+  .stat-num { background: linear-gradient(180deg,#fff,#a3a3a3); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .marquee { animation: scroll 40s linear infinite; }
+  @keyframes scroll { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .float { animation: float 4s ease-in-out infinite; }
+  .reveal { opacity: 0; transform: translateY(16px); transition: all .8s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+  .chip { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); }
+  .chip.active { background: linear-gradient(90deg,#ec4899,#c084fc); border-color: transparent; color: #fff; }
+  details summary::-webkit-details-marker { display: none; }
+  details[open] .chev { transform: rotate(90deg); }
+  .chev { transition: transform .2s ease; display: inline-block; }
+  .panel { background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01)); border: 1px solid rgba(255,255,255,.07); }
+  .nav-item { color: #a3a3a3; }
+  .nav-item:hover { background: rgba(255,255,255,.04); color:#fff; }
+  .nav-item.active { background: linear-gradient(90deg, rgba(236,72,153,.18), rgba(192,132,252,.12)); color: #fff; border-left: 3px solid #ec4899; }
+  .switch { width: 44px; height: 24px; background: rgba(255,255,255,.1); border-radius: 999px; position: relative; cursor: pointer; transition: background .2s; flex-shrink:0; }
+  .switch::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:#fff; transition: transform .2s; }
+  .switch.on { background: linear-gradient(90deg,#ec4899,#c084fc); }
+  .switch.on::after { transform: translateX(20px); }
+  .input { width:100%; background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:10px; padding: 8px 12px; font-size: 14px; color:#fff; }
+  .input:focus { outline:none; border-color: rgba(236,72,153,.5); }
+  .toast { position:fixed; bottom: 24px; left:50%; transform:translateX(-50%) translateY(20px); opacity:0; transition: all .25s ease; background:#111; border:1px solid rgba(34,197,94,.4); color:#bbf7d0; padding: 10px 16px; border-radius: 12px; font-size:14px; z-index:100; pointer-events:none; }
+  .toast.show { opacity:1; transform: translateX(-50%) translateY(0); }
+  .ping { display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow: 0 0 0 0 rgba(16,185,129,.6); animation: ping 1.6s infinite; }
+  @keyframes ping { 0%{box-shadow:0 0 0 0 rgba(16,185,129,.6)} 70%{box-shadow:0 0 0 12px rgba(16,185,129,0)} 100%{box-shadow:0 0 0 0 rgba(16,185,129,0)} }
+  .progress { height: 6px; background: rgba(255,255,255,.06); border-radius: 999px; overflow:hidden; }
+  .progress > div { height:100%; background: linear-gradient(90deg,#ec4899,#c084fc); transition: width .3s ease; }
+  .glow-soft { box-shadow: 0 8px 40px rgba(236,72,153,.18); }
+  .page { display: none; }
+  .page.show { display: block; }
+  .navlink.active { color:#fff; }
+</style>
+</head>
+<body class="text-neutral-100 antialiased">
+
+<!-- ===================== NAV ===================== -->
+<header class="sticky top-0 z-50 nav-blur border-b border-white/5">
+  <div class="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
+    <a href="#home" class="flex items-center gap-3">
+      <img data-lily class="w-9 h-9 rounded-full ring-2 ring-pink-500/40" alt="Lily" />
+      <span class="font-semibold text-lg tracking-tight">lily</span>
+      <span id="bot-status" class="ml-3 hidden sm:inline-flex items-center gap-2 text-xs text-emerald-300/90">
+        <span class="ping"></span> bot online
+      </span>
+    </a>
+    <nav class="hidden md:flex items-center gap-8 text-sm text-neutral-300">
+      <a href="#commands" data-nav="commands" class="navlink hover:text-white transition">Commands</a>
+      <a href="#dashboard" data-nav="dashboard" class="navlink hover:text-white transition">Dashboard</a>
+      <a href="#home" data-nav="home" class="navlink hover:text-white transition">Home</a>
+      <a href="#terms" data-nav="terms" class="navlink hover:text-white transition">Terms</a>
+      <a href="#privacy" data-nav="privacy" class="navlink hover:text-white transition">Privacy</a>
+      <a href="https://discord.gg/RYY9SU4uj" target="_blank" rel="noopener" class="hover:text-white transition">Support</a>
+    </nav>
+    <a href="https://discord.com/oauth2/authorize?client_id=1493552809415671830" target="_blank" rel="noopener"
+       class="btn-primary px-4 py-2 rounded-full text-sm font-medium">Add to Discord</a>
+  </div>
+</header>
+
+<!-- ===================== HOME ===================== -->
+<div id="page-home" class="page">
+  <section class="relative overflow-hidden">
+    <div class="max-w-5xl mx-auto px-6 pt-24 pb-20 text-center">
+      <img data-lily class="w-24 h-24 rounded-full mx-auto ring-4 ring-pink-500/40 glow float" alt="Lily" />
+      <p class="mt-6 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-neutral-400">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        online · trusted by communities
+      </p>
+      <h1 class="mt-6 text-5xl md:text-7xl font-extrabold leading-[1.05] tracking-tight">
+        Discord's most powerful <span class="grad-text">all-in-one</span> app
+      </h1>
+      <p class="mt-6 max-w-2xl mx-auto text-neutral-400 text-lg">
+        Experience the ultimate Discord bot designed for seamless management and community engagement.
+        Transform your server with powerful tools, automated workflows, and premium features tailored to your every need.
+      </p>
+      <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
+        <a href="https://discord.com/oauth2/authorize?client_id=1493552809415671830" target="_blank" rel="noopener"
+           class="btn-primary px-6 py-3 rounded-full font-semibold inline-flex items-center gap-2 glow">
+          Invite to Discord
+        </a>
+        <a href="#dashboard" class="px-6 py-3 rounded-full font-semibold border border-white/10 hover:bg-white/5 transition">Open Dashboard ›</a>
+        <a href="https://discord.gg/RYY9SU4uj" target="_blank" rel="noopener"
+           class="px-6 py-3 rounded-full font-semibold border border-white/10 hover:bg-white/5 transition">Support Server</a>
+      </div>
+    </div>
+
+    <div class="max-w-5xl mx-auto px-6 pb-16">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="card rounded-2xl p-6 text-center"><div class="text-3xl md:text-4xl font-extrabold stat-num" data-count="23694963">0</div><div class="mt-1 text-xs uppercase tracking-widest text-neutral-400">Users</div></div>
+        <div class="card rounded-2xl p-6 text-center"><div class="text-3xl md:text-4xl font-extrabold stat-num" data-count="165898">0</div><div class="mt-1 text-xs uppercase tracking-widest text-neutral-400">Communities</div></div>
+        <div class="card rounded-2xl p-6 text-center"><div class="text-3xl md:text-4xl font-extrabold stat-num" data-count="190">0</div><div class="mt-1 text-xs uppercase tracking-widest text-neutral-400">Commands</div></div>
+        <div class="card rounded-2xl p-6 text-center"><div class="text-3xl md:text-4xl font-extrabold stat-num" data-count="22">0</div><div class="mt-1 text-xs uppercase tracking-widest text-neutral-400">Modules</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="border-y border-white/5 bg-black/40">
+    <div class="overflow-hidden py-6">
+      <div class="flex gap-12 marquee whitespace-nowrap text-neutral-500 uppercase text-xs tracking-widest">
+        <div class="flex gap-12"><span>Antinuke + Automod</span><span>•</span><span>Music · Lavalink</span><span>•</span><span>Welcomer</span><span>•</span><span>Tickets</span><span>•</span><span>Join-to-Create</span><span>•</span><span>Custom Roles</span><span>•</span><span>Logs</span><span>•</span><span>Giveaways</span><span>•</span></div>
+        <div class="flex gap-12" aria-hidden="true"><span>Antinuke + Automod</span><span>•</span><span>Music · Lavalink</span><span>•</span><span>Welcomer</span><span>•</span><span>Tickets</span><span>•</span><span>Join-to-Create</span><span>•</span><span>Custom Roles</span><span>•</span><span>Logs</span><span>•</span><span>Giveaways</span><span>•</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="max-w-7xl mx-auto px-6 py-24">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight">Everything your server needs</h2>
+      <p class="mt-4 text-neutral-400">22 modules. 190+ commands. One bot.</p>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5" id="feat-grid"></div>
+  </section>
+
+  <section class="max-w-5xl mx-auto px-6 pb-24">
+    <div class="card rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
+      <div class="absolute -inset-1 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 blur-2xl"></div>
+      <div class="relative">
+        <img data-lily class="w-16 h-16 rounded-full mx-auto ring-2 ring-white/10" alt="Lily" />
+        <h3 class="mt-6 text-3xl md:text-4xl font-extrabold tracking-tight">Ready to upgrade your server?</h3>
+        <p class="mt-3 text-neutral-400">Add Lily in seconds. Configure everything from a beautiful dashboard.</p>
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+          <a href="https://discord.com/oauth2/authorize?client_id=1493552809415671830" target="_blank" rel="noopener" class="btn-primary px-6 py-3 rounded-full font-semibold glow">Add to Discord</a>
+          <a href="#dashboard" class="px-6 py-3 rounded-full font-semibold border border-white/10 hover:bg-white/5 transition">Open Dashboard</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ===================== COMMANDS ===================== -->
+<div id="page-commands" class="page">
+  <section class="max-w-7xl mx-auto px-6 pt-16 pb-10">
+    <p class="text-xs uppercase tracking-widest text-neutral-400">Commands</p>
+    <h1 class="mt-2 text-5xl font-extrabold tracking-tight">Every command, <span class="grad-text">in one place</span></h1>
+    <p class="mt-4 text-neutral-400 max-w-2xl">All 190+ commands across 16 modules. Search by name or browse by category.</p>
+    <div class="mt-8 flex flex-col md:flex-row gap-3">
+      <div class="relative flex-1">
+        <input id="cmd-search" type="text" placeholder="Search commands… (e.g. ban, antinuke, play)" class="w-full bg-white/5 border border-white/10 focus:border-pink-500/60 focus:outline-none rounded-xl px-4 py-3 placeholder:text-neutral-500" />
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 text-sm" id="cmd-count"></span>
+      </div>
+    </div>
+    <div id="cmd-chips" class="mt-5 flex flex-wrap gap-2"></div>
+  </section>
+  <section class="max-w-7xl mx-auto px-6 pb-24">
+    <div id="cmd-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <p id="cmd-empty" class="hidden text-center text-neutral-500 py-16">No commands match your search.</p>
+  </section>
+</div>
+
+<!-- ===================== DASHBOARD ===================== -->
+<div id="page-dashboard" class="page">
+  <section class="max-w-[1400px] mx-auto px-6 pt-10 pb-6">
+    <p class="text-xs uppercase tracking-widest text-neutral-400">Live dashboard</p>
+    <h1 class="mt-2 text-4xl md:text-5xl font-extrabold tracking-tight">Configure your server <span class="grad-text">in real time</span></h1>
+    <p class="mt-3 text-neutral-400 max-w-2xl">Pick a server, toggle a feature, and Lily applies it instantly. Every change saves to your browser.</p>
+  </section>
+
+  <section class="max-w-[1400px] mx-auto px-6 mb-6">
+    <div class="panel rounded-2xl p-4 flex flex-wrap items-center gap-4 glow-soft">
+      <div class="text-xs uppercase tracking-widest text-neutral-400">Active server</div>
+      <select id="server-select" class="input max-w-xs"></select>
+      <button id="add-server" class="text-sm text-pink-300 hover:text-pink-200">+ Add server</button>
+      <div class="ml-auto flex items-center gap-3 text-sm text-neutral-400">
+        <span id="connection-status" class="inline-flex items-center gap-2"><span class="ping"></span> Local demo mode</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="max-w-[1400px] mx-auto px-6 grid grid-cols-12 gap-6 pb-24">
+    <aside class="col-span-12 md:col-span-3"><div class="panel rounded-2xl p-2 sticky top-20" id="sidebar"></div></aside>
+    <main class="col-span-12 md:col-span-9 space-y-5" id="dash-main"></main>
+  </section>
+</div>
+
+<!-- ===================== TERMS PAGE ===================== -->
+<div id="page-terms" class="page">
+  <section class="max-w-3xl mx-auto px-6 pt-16 pb-10">
+    <p class="text-xs uppercase tracking-widest text-neutral-400">Legal</p>
+    <h1 class="mt-2 text-5xl font-extrabold tracking-tight">Terms of <span class="grad-text">Service</span></h1>
+    <p class="mt-4 text-neutral-500 text-sm">Last updated: April 26, 2026</p>
+  </section>
+  <section class="max-w-3xl mx-auto px-6 pb-24 space-y-5 text-neutral-400 leading-relaxed">
+    <div class="panel rounded-2xl p-6 text-sm text-neutral-300">By inviting <strong>Lily</strong> to your Discord server, using its commands, or signing in to its dashboard, you agree to these Terms of Service. If you do not agree, please remove the bot and stop using the site.</div>
+
+    <h2 class="text-xl font-bold text-white pt-4">1. Service description</h2>
+    <p>Lily is a free Discord application offering moderation, automation, music, ticketing, welcome, logging, and related community-management features, accompanied by a web dashboard for configuration.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">2. Eligibility</h2>
+    <p>You must comply with the <a class="text-pink-400 underline" href="https://discord.com/terms" target="_blank" rel="noopener">Discord Terms of Service</a> and meet Discord's minimum age requirement for your country (generally 13+). Server administrators are responsible for ensuring their members do as well.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">3. Acceptable use</h2>
+    <p>You agree NOT to use Lily to:</p>
+    <ul class="list-disc pl-6 space-y-1">
+      <li>Violate any law, third-party rights, or Discord's Community Guidelines / Terms of Service.</li>
+      <li>Harass, threaten, dox, defame, or impersonate any person.</li>
+      <li>Distribute malware, phishing links, illegal content, or sexually explicit content involving minors.</li>
+      <li>Spam, mass-mention, raid, or attempt to disrupt other Discord servers.</li>
+      <li>Reverse-engineer, scrape at unreasonable rates, or attempt to gain unauthorised access to the bot or other users' data.</li>
+      <li>Resell, sublicense, or commercially exploit the bot or its source code without written permission.</li>
+    </ul>
+    <p>We may, at our sole discretion, blacklist users, servers, or IP addresses that violate these rules.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">4. Server-administrator responsibilities</h2>
+    <p>If you add Lily to a server you manage, you are responsible for:</p>
+    <ul class="list-disc pl-6 space-y-1">
+      <li>Configuring permissions, automod filters, antinuke rules, and welcome/log channels appropriately.</li>
+      <li>Disclosing to your members that an automated bot is present and may log moderation actions, voice activity, message edits/deletions, and similar events when those modules are enabled.</li>
+      <li>Obtaining any consents required under your local laws before enabling logging or DM-based features.</li>
+    </ul>
+
+    <h2 class="text-xl font-bold text-white pt-4">5. Premium and donations</h2>
+    <p>Some features may be marked as "premium". Where premium access is offered, it is granted at our discretion, may change at any time, and is non-transferable. We do not currently issue refunds for voluntary donations.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">6. Availability and changes</h2>
+    <p>Lily is provided <strong>"as is" and "as available"</strong>. We do not guarantee uptime, error-free operation, or that any specific feature will continue to exist. We may add, remove, modify, or rate-limit features at any time without prior notice.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">7. Disclaimer of warranties</h2>
+    <p>To the fullest extent permitted by law, Lily and its operators disclaim all warranties, express or implied, including fitness for a particular purpose, non-infringement, and merchantability.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">8. Limitation of liability</h2>
+    <p>Under no circumstances shall the operators of Lily be liable for any indirect, incidental, consequential, special, or exemplary damages arising from the use of, or inability to use, the bot or this website — including loss of data, profits, members, or reputation — even if advised of the possibility of such damages.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">9. Indemnification</h2>
+    <p>You agree to defend, indemnify, and hold harmless the operators of Lily from any claim arising out of your use of the bot, your violation of these Terms, or your violation of any third-party right.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">10. Termination</h2>
+    <p>We may terminate or suspend your access to Lily at any time, without notice, for any reason — including suspected violation of these Terms. You may stop using the bot at any time by removing it from your server(s) and logging out of the dashboard.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">11. Changes to these Terms</h2>
+    <p>We may update these Terms from time to time. The "Last updated" date above will reflect the most recent revision. Continued use of the bot or site after changes are posted constitutes acceptance of the updated Terms.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">12. Contact</h2>
+    <p>Questions about these Terms? Reach us in the <a class="text-pink-400 underline" href="https://discord.gg/RYY9SU4uj" target="_blank" rel="noopener">official support server</a>.</p>
+  </section>
+</div>
+
+<!-- ===================== PRIVACY PAGE ===================== -->
+<div id="page-privacy" class="page">
+  <section class="max-w-3xl mx-auto px-6 pt-16 pb-10">
+    <p class="text-xs uppercase tracking-widest text-neutral-400">Legal</p>
+    <h1 class="mt-2 text-5xl font-extrabold tracking-tight">Privacy <span class="grad-text">Policy</span></h1>
+    <p class="mt-4 text-neutral-500 text-sm">Last updated: April 26, 2026</p>
+  </section>
+  <section class="max-w-3xl mx-auto px-6 pb-24 space-y-5 text-neutral-400 leading-relaxed">
+    <div class="panel rounded-2xl p-6 text-sm text-neutral-300">This policy explains what data <strong>Lily</strong> collects, why we collect it, how long we keep it, and the choices you have. We collect the minimum needed to operate the bot and dashboard.</div>
+
+    <h2 class="text-xl font-bold text-white pt-4">1. Data we collect</h2>
+
+    <h3 class="text-base font-semibold text-white pt-2">1.1 From Discord OAuth login (dashboard)</h3>
+    <p>When you click "Login with Discord", Discord shares the following with us using the <code class="text-pink-300">identify</code> and <code class="text-pink-300">guilds</code> scopes: your Discord user ID, username, global display name, avatar hash, and the list of servers you are in (with your permissions and ownership). OAuth access &amp; refresh tokens are kept only to maintain your session. We do NOT request your email, your messages, your friends list, or any payment information.</p>
+
+    <h3 class="text-base font-semibold text-white pt-2">1.2 From server activity (bot)</h3>
+    <p>When Lily is in a server, it processes Discord events strictly as needed to deliver the features that server has enabled:</p>
+    <ul class="list-disc pl-6 space-y-1">
+      <li><strong>Moderation / Antinuke / Automod</strong> — message content, attachments, member join/leave, role/channel changes, and audit-log entries are inspected to detect rule violations or nuke attempts. Detected violations may be stored as case records (offender ID, moderator ID, reason, timestamp).</li>
+      <li><strong>Welcomer</strong> — new-member events trigger a welcome message; nothing about the message is retained.</li>
+      <li><strong>Tickets</strong> — channel IDs, ticket-opener IDs, and (optionally) chat transcripts are stored for the lifetime of the ticket / configured retention.</li>
+      <li><strong>Logs</strong> — when this module is enabled by a server admin, message edits/deletions, member joins/leaves, voice events, and role updates are forwarded to the channels chosen by that admin.</li>
+      <li><strong>Music / Playlist</strong> — track titles and saved playlists are stored against your Discord user ID.</li>
+      <li><strong>Custom roles, J2C, Giveaways, Autoresponder, Server Config</strong> — only the configuration you provide (role IDs, channel IDs, prefixes, colors, etc.) is stored.</li>
+    </ul>
+
+    <h3 class="text-base font-semibold text-white pt-2">1.3 From the dashboard (in-browser)</h3>
+    <p>Your toggle states and field values entered in the dashboard are stored in your browser's <strong>localStorage</strong> under the key <code class="text-pink-300">lily.dashboard.v1</code>. They never leave your device unless and until you press a "Save to bot" action that explicitly synchronises a value.</p>
+
+    <h3 class="text-base font-semibold text-white pt-2">1.4 Operational logs</h3>
+    <p>Like any web service, our servers produce request logs containing IP address, timestamp, request path, status code and user-agent. These are kept for up to <strong>14 days</strong> for abuse-prevention and debugging, then deleted.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">2. How long we keep data</h2>
+    <ul class="list-disc pl-6 space-y-1">
+      <li>OAuth session cookie — 7 days, or until you log out.</li>
+      <li>OAuth tokens server-side — discarded when the session ends.</li>
+      <li>Per-server configuration — until the server removes Lily, or until manual deletion is requested.</li>
+      <li>Moderation cases / warnings — kept while the bot is in the server, or until cleared by an admin.</li>
+      <li>Operational request logs — ≤ 14 days.</li>
+      <li>Browser localStorage — stays in your browser until you clear it.</li>
+    </ul>
+
+    <h2 class="text-xl font-bold text-white pt-4">3. How we use your data</h2>
+    <ul class="list-disc pl-6 space-y-1">
+      <li>To deliver the features each server has enabled.</li>
+      <li>To keep the bot, dashboard, and your account secure (rate-limit abuse, detect raids, etc.).</li>
+      <li>To debug errors and improve reliability.</li>
+    </ul>
+    <p>We do <strong>not</strong> sell your data, share it with advertisers, or use it to build cross-service profiles.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">4. Who we share data with</h2>
+    <ul class="list-disc pl-6 space-y-1">
+      <li><strong>Discord</strong> — by definition, all bot traffic flows through Discord's APIs and is subject to <a class="text-pink-400 underline" href="https://discord.com/privacy" target="_blank" rel="noopener">Discord's Privacy Policy</a>.</li>
+      <li><strong>Hosting / infrastructure providers</strong> — used to run the bot and website. They process data on our behalf under their own confidentiality terms.</li>
+      <li>We may disclose information when legally required by a valid subpoena or court order.</li>
+    </ul>
+
+    <h2 class="text-xl font-bold text-white pt-4">5. Your rights and choices</h2>
+    <ul class="list-disc pl-6 space-y-1">
+      <li><strong>Access / correction / deletion</strong> — request a copy of, or deletion of, the data tied to your Discord user ID by contacting us in the <a class="text-pink-400 underline" href="https://discord.gg/RYY9SU4uj" target="_blank" rel="noopener">support server</a>. Verified requests actioned within 30 days.</li>
+      <li><strong>Revoke OAuth</strong> — at any time from your <a class="text-pink-400 underline" href="https://discord.com/developers/applications" target="_blank" rel="noopener">Discord Authorised Apps</a> page.</li>
+      <li><strong>Remove the bot</strong> — server owners can kick Lily at any time, which stops all event processing for that server.</li>
+      <li><strong>Clear local settings</strong> — clearing your browser site data removes the <code class="text-pink-300">lily.dashboard.v1</code> entry instantly.</li>
+    </ul>
+
+    <h2 class="text-xl font-bold text-white pt-4">6. Cookies</h2>
+    <p>We set a single first-party session cookie named <code class="text-pink-300">lily.sid</code> when you log in to the dashboard. It is HTTP-only, SameSite=Lax, and contains only a randomly generated session identifier. We do not use third-party tracking, advertising, or analytics cookies.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">7. Children</h2>
+    <p>Lily is not directed at children under the minimum age set by Discord for your jurisdiction. We do not knowingly collect data from anyone below that age. If you believe we have, contact us and we will delete it.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">8. International transfers</h2>
+    <p>Our servers may be located outside your country. By using Lily you consent to your data being processed in jurisdictions that may have different data-protection laws than your own.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">9. Security</h2>
+    <p>We use HTTPS, modern session encryption, and least-privilege Discord scopes. No system is perfectly secure, but we work to protect your data and to disclose any verified breach without undue delay.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">10. Changes to this policy</h2>
+    <p>If we make material changes, we will update the "Last updated" date above and, where appropriate, post a notice in the support server.</p>
+
+    <h2 class="text-xl font-bold text-white pt-4">11. Contact</h2>
+    <p>For privacy questions or data requests, reach us in the <a class="text-pink-400 underline" href="https://discord.gg/RYY9SU4uj" target="_blank" rel="noopener">official support server</a>.</p>
+  </section>
+</div>
+
+<div id="toast" class="toast">Saved</div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="border-t border-white/5">
+  <div class="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-neutral-500">
+    <div class="flex items-center gap-3">
+      <img data-lily class="w-7 h-7 rounded-full" alt="Lily" />
+      <span>© <span id="year"></span> lily</span>
+    </div>
+    <div class="flex flex-wrap gap-6">
+      <a href="#home" class="hover:text-white transition">Home</a>
+      <a href="#commands" class="hover:text-white transition">Commands</a>
+      <a href="#dashboard" class="hover:text-white transition">Dashboard</a>
+      <a href="#terms" class="hover:text-white transition">Terms</a>
+      <a href="#privacy" class="hover:text-white transition">Privacy</a>
+      <a href="https://discord.gg/RYY9SU4uj" target="_blank" rel="noopener" class="hover:text-white transition">Support</a>
+    </div>
+  </div>
+</footer>
+
+<script id="lily-assets">window.__LILY_AVATAR="data:image/png;base64,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";
+window.__LILY_COMMANDS={
+  "antinuke": [
+    {
+      "name": "antinuke",
+      "description": "Antinuke protection system — configure all 16 security filters",
+      "subcommands": [
+        {
+          "name": "enable",
+          "description": "Enable the antinuke protection system"
+        },
+        {
+          "name": "disable",
+          "description": "Disable the antinuke protection system"
+        },
+        {
+          "name": "status",
+          "description": "View the current antinuke status and all module states"
+        },
+        {
+          "name": "reset",
+          "description": "Reset ALL antinuke data and settings (Server Owner only)"
+        },
+        {
+          "name": "zplus",
+          "description": "Activate Z+ maximum security lockdown (Server Owner only)"
+        },
+        {
+          "name": "wallon",
+          "description": "Manually activate the Wall Role"
+        },
+        {
+          "name": "walloff",
+          "description": "Manually deactivate the Wall Role"
+        },
+        {
+          "name": "logdisable",
+          "description": "Disable antinuke logging"
+        },
+        {
+          "name": "logging",
+          "description": "Set the antinuke logging channel"
+        },
+        {
+          "name": "autorecovery",
+          "description": "Toggle automatic recovery of nuked changes"
+        },
+        {
+          "name": "limit",
+          "description": "View and configure per-filter rate limits"
+        },
+        {
+          "name": "betrayalguard",
+          "description": "Toggle Betrayal Guard for whitelisted users"
+        }
+      ]
+    },
+    {
+      "name": "panicmode",
+      "description": "Panic Mode — automated Z+ lockdown when heat threshold is exceeded",
+      "subcommands": [
+        {
+          "name": "enable",
+          "description": "Enable automated panic mode"
+        },
+        {
+          "name": "disable",
+          "description": "Disable the panic mode system"
+        },
+        {
+          "name": "set",
+          "description": "Update specific panic mode settings"
+        },
+        {
+          "name": "reset",
+          "description": "Reset all panic mode settings to defaults"
+        },
+        {
+          "name": "status",
+          "description": "View panic mode status and current heat level"
+        }
+      ]
+    },
+    {
+      "name": "extraowner",
+      "description": "Manage extra owners who have elevated bot permissions",
+      "subcommands": [
+        {
+          "name": "add",
+          "description": "Add a user as an extra owner"
+        },
+        {
+          "name": "remove",
+          "description": "Remove a user from extra owners"
+        },
+        {
+          "name": "list",
+          "description": "List all current extra owners"
+        }
+      ]
+    },
+    {
+      "name": "nightmode",
+      "description": "Toggle night mode — restricts server activity during set hours",
+      "subcommands": [
+        {
+          "name": "enable",
+          "description": "Enable night mode for this server"
+        },
+        {
+          "name": "disable",
+          "description": "Disable night mode for this server"
+        },
+        {
+          "name": "status",
+          "description": "View night mode status and settings"
+        }
+      ]
+    },
+    {
+      "name": "vanityguard",
+      "description": "Protect the server vanity URL from being stolen",
+      "subcommands": [
+        {
+          "name": "enable",
+          "description": "Enable vanity guard protection"
+        },
+        {
+          "name": "disable",
+          "description": "Disable vanity guard protection"
+        },
+        {
+          "name": "status",
+          "description": "View vanity guard status"
+        }
+      ]
+    },
+    {
+      "name": "recover",
+      "description": "Server recovery system — save or restore your server structure",
+      "subcommands": [
+        {
+          "name": "save",
+          "description": "Save the current server structure as a recovery template"
+        },
+        {
+          "name": "start",
+          "description": "Begin restoring channels and roles from the saved template"
+        },
+        {
+          "name": "status",
+          "description": "View the saved recovery template info"
+        }
+      ]
+    },
+    {
+      "name": "whitelist",
+      "description": "Add a user to the antinuke whitelist",
+      "subcommands": []
+    },
+    {
+      "name": "unwhitelist",
+      "description": "Remove a user from the antinuke whitelist",
+      "subcommands": []
+    },
+    {
+      "name": "whitelisted",
+      "description": "View all users currently on the antinuke whitelist",
+      "subcommands": []
+    },
+    {
+      "name": "whitelistreset",
+      "description": "Reset and clear the entire antinuke whitelist",
+      "subcommands": []
+    },
+    {
+      "name": "antibot",
+      "description": "Auto-delete bot messages in configured channels",
+      "subcommands": [
+        {
+          "name": "channel",
+          "description": "Manage channels where bot messages are deleted"
+        },
+        {
+          "name": "whitelist",
+          "description": "Manage bots exempt from autodelete"
+        }
+      ]
+    },
+    {
+      "name": "wlisted",
+      "description": "Show users currently whitelisted from the antinuke system",
+      "subcommands": []
+    }
+  ],
+  "automod": [
+    {
+      "name": "automod",
+      "description": "Manage the automod system — 12 filters, heat system, and auto-mute",
+      "subcommands": [
+        {
+          "name": "enable",
+          "description": "Enable automod for this server"
+        },
+        {
+          "name": "disable",
+          "description": "Disable automod (keeps settings saved)"
+        },
+        {
+          "name": "manage",
+          "description": "Toggle individual filters on/off"
+        },
+        {
+          "name": "punishment",
+          "description": "Configure punishment for a filter"
+        },
+        {
+          "name": "config",
+          "description": "View all automod settings and filter statuses"
+        },
+        {
+          "name": "logging",
+          "description": "Set a logging channel for automod actions"
+        },
+        {
+          "name": "automute",
+          "description": "Configure the auto-timeout escalation system"
+        },
+        {
+          "name": "heat",
+          "description": "Configure the heat system"
+        },
+        {
+          "name": "ignore",
+          "description": "Whitelist a user/channel/role from automod"
+        },
+        {
+          "name": "unignore",
+          "description": "Remove a user/channel/role from the whitelist"
+        },
+        {
+          "name": "reset",
+          "description": "Reset ALL automod data and settings"
+        }
+      ]
+    },
+    {
+      "name": "blword",
+      "description": "Manage the blacklisted words filter",
+      "subcommands": [
+        {
+          "name": "add",
+          "description": "Add words to the blacklist (comma-separated)"
+        },
+        {
+          "name": "remove",
+          "description": "Remove words from the blacklist"
+        },
+        {
+          "name": "show",
+          "description": "View all blacklisted words"
+        },
+        {
+          "name": "reset",
+          "description": "Clear the entire blacklist"
+        },
+        {
+          "name": "wlrole",
+          "description": "Whitelist roles from the word filter"
+        },
+        {
+          "name": "wlchannel",
+          "description": "Whitelist channels from the word filter"
+        },
+        {
+          "name": "punish",
+          "description": "Configure punishment for blacklisted word violations"
+        }
+      ]
+    }
+  ],
+  "config": [
+    {
+      "name": "config",
+      "description": "View the current music player and bot configuration",
+      "subcommands": []
+    },
+    {
+      "name": "sticky",
+      "description": "Manage sticky messages for channels",
+      "subcommands": [
+        {
+          "name": "add",
+          "description": "Add a sticky message to the current channel"
+        },
+        {
+          "name": "remove",
+          "description": "Remove the sticky from the current channel"
+        },
+        {
+          "name": "show",
+          "description": "List all sticky messages in this server"
+        },
+        {
+          "name": "reset",
+          "description": "Remove all sticky messages from this server"
+        },
+        {
+          "name": "channel",
+          "description": "Manage the sticky for a specific channel"
+        }
+      ]
+    },
+    {
+      "name": "color",
+      "description": "Manage the embed color for all bot responses in this server",
+      "subcommands": [
+        {
+          "name": "get",
+          "description": "Show the current embed color"
+        },
+        {
+          "name": "set",
+          "description": "Set a new embed color"
+        },
+        {
+          "name": "reset",
+          "description": "Reset embed color to default"
+        }
+      ]
+    },
+    {
+      "name": "customize",
+      "description": "Customize the bot's avatar, banner, or bio for this server",
+      "subcommands": [
+        {
+          "name": "avatar",
+          "description": "Set a custom bot avatar for this server"
+        },
+        {
+          "name": "banner",
+          "description": "Set a custom bot banner for this server"
+        },
+        {
+          "name": "bio",
+          "description": "Set a custom bot bio for this server"
+        },
+        {
+          "name": "reset",
+          "description": "Reset avatar, banner, bio, or all to default"
+        }
+      ]
+    },
+    {
+      "name": "setup",
+      "description": "Manage custom roles (personal role system)",
+      "subcommands": [
+        {
+          "name": "add",
+          "description": "Register a new custom role tier"
+        },
+        {
+          "name": "remove",
+          "description": "Remove a custom role tier"
+        },
+        {
+          "name": "config",
+          "description": "Set the linked role for a tier"
+        },
+        {
+          "name": "reset",
+          "description": "Reset the entire custom role system"
+        },
+        {
+          "name": "list",
+          "description": "List all configured custom role tiers"
+        },
+        {
+          "name": "reqrole",
+          "description": "Set the role required to claim a custom role"
+        }
+      ]
+    },
+    {
+      "name": "autologs",
+      "description": "Manage the automatic logging system for this server",
+      "subcommands": [
+        {
+          "name": "setup",
+          "description": "Create log channels and set up the full logging system"
+        },
+        {
+          "name": "reset",
+          "description": "Remove all log channel configurations"
+        },
+        {
+          "name": "show",
+          "description": "Show all configured log channels"
+        },
+        {
+          "name": "status",
+          "description": "View the enable/disable status of each log category"
+        },
+        {
+          "name": "toggle",
+          "description": "Toggle a specific log category on or off"
+        }
+      ]
+    },
+    {
+      "name": "autoresponder",
+      "description": "Manage autoresponder triggers and responses",
+      "subcommands": [
+        {
+          "name": "add",
+          "description": "Add a new trigger and response"
+        },
+        {
+          "name": "remove",
+          "description": "Remove an existing trigger"
+        },
+        {
+          "name": "edit",
+          "description": "Rename a trigger keyword"
+        },
+        {
+          "name": "show",
+          "description": "List all active triggers"
+        },
+        {
+          "name": "enable",
+          "description": "Enable a specific trigger"
+        },
+        {
+          "name": "disable",
+          "description": "Disable a specific trigger"
+        },
+        {
+          "name": "toggle",
+          "description": "Toggle the entire autoresponder system on/off"
+        },
+        {
+          "name": "ignore",
+          "description": "Manage channels where autoresponder never fires"
+        }
+      ]
+    }
+  ],
+  "fun": [
+    {
+      "name": "hug",
+      "description": "Give someone a warm hug",
+      "subcommands": []
+    },
+    {
+      "name": "kiss",
+      "description": "Kiss someone",
+      "subcommands": []
+    },
+    {
+      "name": "slap",
+      "description": "Slap someone",
+      "subcommands": []
+    },
+    {
+      "name": "pat",
+      "description": "Pat someone's head",
+      "subcommands": []
+    },
+    {
+      "name": "cuddle",
+      "description": "Cuddle with someone",
+      "subcommands": []
+    },
+    {
+      "name": "tickle",
+      "description": "Tickle someone",
+      "subcommands": []
+    },
+    {
+      "name": "kill",
+      "description": "Virtually kill someone (all in good fun!)",
+      "subcommands": []
+    },
+    {
+      "name": "sorry",
+      "description": "Send an animated apology to someone",
+      "subcommands": []
+    },
+    {
+      "name": "angry",
+      "description": "Express an angry reaction toward someone",
+      "subcommands": []
+    },
+    {
+      "name": "blush",
+      "description": "Show a blushing reaction at someone",
+      "subcommands": []
+    },
+    {
+      "name": "cry",
+      "description": "Show a crying reaction",
+      "subcommands": []
+    },
+    {
+      "name": "laugh",
+      "description": "Laugh at someone with an animated GIF",
+      "subcommands": []
+    },
+    {
+      "name": "love",
+      "description": "Show love toward someone",
+      "subcommands": []
+    },
+    {
+      "name": "run",
+      "description": "Run away from someone in a panic",
+      "subcommands": []
+    },
+    {
+      "name": "sad",
+      "description": "Express sadness caused by someone",
+      "subcommands": []
+    },
+    {
+      "name": "sleep",
+      "description": "Show a sleeping reaction",
+      "subcommands": []
+    },
+    {
+      "name": "smile",
+      "description": "Smile at someone warmly",
+      "subcommands": []
+    },
+    {
+      "name": "celebrate",
+      "description": "Celebrate together with someone",
+      "subcommands": []
+    },
+    {
+      "name": "cheers",
+      "description": "Cheer someone with a virtual toast",
+      "subcommands": []
+    },
+    {
+      "name": "clap",
+      "description": "Clap for someone to show appreciation",
+      "subcommands": []
+    },
+    {
+      "name": "confused",
+      "description": "Show a confused reaction at someone",
+      "subcommands": []
+    },
+    {
+      "name": "cool",
+      "description": "Tell someone they are cool",
+      "subcommands": []
+    },
+    {
+      "name": "handhold",
+      "description": "Hold hands with someone",
+      "subcommands": []
+    },
+    {
+      "name": "nervous",
+      "description": "Show a nervous reaction because of someone",
+      "subcommands": []
+    },
+    {
+      "name": "ai",
+      "description": "Chat with lily AI or generate images on-demand",
+      "subcommands": []
+    }
+  ],
+  "giveaway": [
+    {
+      "name": "giveaway",
+      "description": "Manage giveaways — start, end, reroll, or list",
+      "subcommands": [
+        {
+          "name": "start",
+          "description": "Start a new giveaway"
+        },
+        {
+          "name": "end",
+          "description": "End a giveaway early"
+        },
+        {
+          "name": "reroll",
+          "description": "Reroll the winner of a giveaway"
+        },
+        {
+          "name": "list",
+          "description": "List all active giveaways"
+        }
+      ]
+    },
+    {
+      "name": "gstart",
+      "description": "Start a new giveaway",
+      "subcommands": []
+    },
+    {
+      "name": "gend",
+      "description": "End a running giveaway early",
+      "subcommands": []
+    },
+    {
+      "name": "greroll",
+      "description": "Reroll the winner(s) of a finished giveaway",
+      "subcommands": []
+    },
+    {
+      "name": "glist",
+      "description": "List all active giveaways in this server",
+      "subcommands": []
+    },
+    {
+      "name": "gsetclaim",
+      "description": "Set a role that winners must claim their prize through",
+      "subcommands": []
+    }
+  ],
+  "information": [
+    {
+      "name": "ping",
+      "description": "Check the bot's latency and API response time",
+      "subcommands": []
+    },
+    {
+      "name": "help",
+      "description": "Show the full help menu or get help for a specific command",
+      "subcommands": []
+    },
+    {
+      "name": "userinfo",
+      "description": "Show detailed information about a user",
+      "subcommands": []
+    },
+    {
+      "name": "serverinfo",
+      "description": "Show detailed information about this server",
+      "subcommands": []
+    },
+    {
+      "name": "avatar",
+      "description": "Show a user's avatar in full size",
+      "subcommands": []
+    },
+    {
+      "name": "banner",
+      "description": "Show a user's banner",
+      "subcommands": []
+    },
+    {
+      "name": "profile",
+      "description": "Show your server profile including levels and stats",
+      "subcommands": []
+    },
+    {
+      "name": "afk",
+      "description": "Set or clear your AFK status",
+      "subcommands": []
+    },
+    {
+      "name": "stats",
+      "description": "Show the bot's overall statistics",
+      "subcommands": []
+    },
+    {
+      "name": "uptime",
+      "description": "Show how long the bot has been running without restart",
+      "subcommands": []
+    },
+    {
+      "name": "invite",
+      "description": "Get the bot's invite link to add it to another server",
+      "subcommands": []
+    },
+    {
+      "name": "support",
+      "description": "Get the link to the bot's official support server",
+      "subcommands": []
+    },
+    {
+      "name": "membercount",
+      "description": "Show the total member count for this server",
+      "subcommands": []
+    },
+    {
+      "name": "premium",
+      "description": "Show information about the premium plan and its perks",
+      "subcommands": []
+    },
+    {
+      "name": "steal",
+      "description": "Steal an emoji from another server and add it here",
+      "subcommands": []
+    },
+    {
+      "name": "emojilist",
+      "description": "List all custom emojis in this server",
+      "subcommands": []
+    },
+    {
+      "name": "roleinfo",
+      "description": "Show detailed information about a role",
+      "subcommands": []
+    },
+    {
+      "name": "permissions",
+      "description": "Show a member's permissions in this server",
+      "subcommands": []
+    },
+    {
+      "name": "channelinfo",
+      "description": "View detailed information about a channel",
+      "subcommands": []
+    },
+    {
+      "name": "firstmsg",
+      "description": "Jump to the very first message in a channel",
+      "subcommands": []
+    },
+    {
+      "name": "snowflake",
+      "description": "Decode a Discord Snowflake ID to see creation time and metadata",
+      "subcommands": []
+    },
+    {
+      "name": "node",
+      "description": "View Lavalink node statistics",
+      "subcommands": []
+    },
+    {
+      "name": "channelcount",
+      "description": "Show a breakdown of channel counts by type",
+      "subcommands": []
+    },
+    {
+      "name": "boostcount",
+      "description": "Show the current boost count and boost level",
+      "subcommands": []
+    },
+    {
+      "name": "servericon",
+      "description": "Show the server icon in full size",
+      "subcommands": []
+    },
+    {
+      "name": "serverbanner",
+      "description": "Show the server banner in full size",
+      "subcommands": []
+    },
+    {
+      "name": "botperms",
+      "description": "View the bot's permissions in a channel",
+      "subcommands": []
+    },
+    {
+      "name": "roleicon",
+      "description": "View or set a role's icon",
+      "subcommands": []
+    },
+    {
+      "name": "roleperms",
+      "description": "View a role's full permission list",
+      "subcommands": []
+    },
+    {
+      "name": "embed",
+      "description": "Open the interactive embed builder to create a custom embed",
+      "subcommands": []
+    },
+    {
+      "name": "setboost",
+      "description": "Configure or view the boost announcement channel",
+      "subcommands": [
+        {
+          "name": "set",
+          "description": "Set the boost announcement channel"
+        },
+        {
+          "name": "off",
+          "description": "Disable boost announcements"
+        },
+        {
+          "name": "view",
+          "description": "Show the current boost channel"
+        }
+      ]
+    },
+    {
+      "name": "webhook",
+      "description": "Custom webhook tools",
+      "subcommands": [
+        {
+          "name": "create",
+          "description": "Create a webhook in a channel and post a formatted embed through it"
+        }
+      ]
+    }
+  ],
+  "j2c": [
+    {
+      "name": "vcgen",
+      "description": "Join-To-Create voice channel system — setup, configure and manage VoiceMaster",
+      "subcommands": [
+        {
+          "name": "setup",
+          "description": "Run full automatic VoiceMaster setup — creates category, creator channel and control panel"
+        },
+        {
+          "name": "status",
+          "description": "Show the current VoiceMaster configuration for this server"
+        },
+        {
+          "name": "panel",
+          "description": "Re-post the control panel in the interface channel (use if panel was deleted)"
+        },
+        {
+          "name": "duo",
+          "description": "Add a Duo creator channel — members who join get a 2-person temp channel"
+        },
+        {
+          "name": "trio",
+          "description": "Add a Trio creator channel — members who join get a 3-person temp channel"
+        },
+        {
+          "name": "squad",
+          "description": "Add a Squad creator channel — members who join get a 4-person temp channel"
+        },
+        {
+          "name": "custom",
+          "description": "Add a custom-limit creator channel with a user limit you specify (1–99)"
+        },
+        {
+          "name": "reset",
+          "description": "Delete all VoiceMaster channels and clear all saved settings (Server Owner only)"
+        }
+      ]
+    }
+  ],
+  "moderation": [
+    {
+      "name": "ban",
+      "description": "Ban a member from the server",
+      "subcommands": []
+    },
+    {
+      "name": "kick",
+      "description": "Kick a member from the server",
+      "subcommands": []
+    },
+    {
+      "name": "mute",
+      "description": "Timeout (mute) a member for a set duration",
+      "subcommands": []
+    },
+    {
+      "name": "unmute",
+      "description": "Remove a timeout from a member",
+      "subcommands": []
+    },
+    {
+      "name": "warn",
+      "description": "Issue a warning to a member",
+      "subcommands": []
+    },
+    {
+      "name": "purge",
+      "description": "Bulk delete messages from a channel",
+      "subcommands": []
+    },
+    {
+      "name": "lock",
+      "description": "Lock a channel so members cannot send messages",
+      "subcommands": []
+    },
+    {
+      "name": "unlock",
+      "description": "Unlock a previously locked channel",
+      "subcommands": []
+    },
+    {
+      "name": "hide",
+      "description": "Hide a channel from all members",
+      "subcommands": []
+    },
+    {
+      "name": "unhide",
+      "description": "Make a hidden channel visible again",
+      "subcommands": []
+    },
+    {
+      "name": "snipe",
+      "description": "Show the last deleted message in a channel",
+      "subcommands": []
+    },
+    {
+      "name": "softban",
+      "description": "Softban a member (ban then unban to delete their messages)",
+      "subcommands": []
+    },
+    {
+      "name": "nick",
+      "description": "Change or reset a member's nickname",
+      "subcommands": []
+    },
+    {
+      "name": "unban",
+      "description": "Unban a user by their Discord ID",
+      "subcommands": []
+    },
+    {
+      "name": "role",
+      "description": "Role management — toggle, add, remove, create, delete, temp, mass and more",
+      "subcommands": [
+        {
+          "name": "toggle",
+          "description": "Toggle a role on a member"
+        },
+        {
+          "name": "add",
+          "description": "Add a role to a member"
+        },
+        {
+          "name": "remove",
+          "description": "Remove a role from a member"
+        },
+        {
+          "name": "create",
+          "description": "Create a new role"
+        },
+        {
+          "name": "delete",
+          "description": "Delete a role"
+        },
+        {
+          "name": "rename",
+          "description": "Rename a role"
+        },
+        {
+          "name": "colour",
+          "description": "Change a role's color"
+        },
+        {
+          "name": "icon",
+          "description": "Set or remove a role's icon"
+        },
+        {
+          "name": "temp",
+          "description": "Give a temporary role that auto-removes"
+        },
+        {
+          "name": "humans",
+          "description": "Give a role to all human members"
+        },
+        {
+          "name": "bots",
+          "description": "Give a role to all bots"
+        },
+        {
+          "name": "everyone",
+          "description": "Give a role to all members"
+        },
+        {
+          "name": "taskcancel",
+          "description": "Cancel an ongoing mass role operation"
+        }
+      ]
+    },
+    {
+      "name": "removerole",
+      "description": "Remove a role from a member, all humans, all bots, or everyone",
+      "subcommands": [
+        {
+          "name": "member",
+          "description": "Remove a role from a specific member"
+        },
+        {
+          "name": "humans",
+          "description": "Remove a role from all human members"
+        },
+        {
+          "name": "bots",
+          "description": "Remove a role from all bots"
+        },
+        {
+          "name": "all",
+          "description": "Remove a role from all members"
+        }
+      ]
+    },
+    {
+      "name": "block",
+      "description": "Block a member from sending messages in a channel",
+      "subcommands": []
+    },
+    {
+      "name": "unblock",
+      "description": "Unblock a member in a channel",
+      "subcommands": []
+    },
+    {
+      "name": "nuke",
+      "description": "Nuke a channel (clone it and delete the original)",
+      "subcommands": []
+    },
+    {
+      "name": "prefix",
+      "description": "Change the bot command prefix for this server",
+      "subcommands": []
+    },
+    {
+      "name": "modrole",
+      "description": "Set or view the moderator role for this server",
+      "subcommands": []
+    },
+    {
+      "name": "unmuteall",
+      "description": "Remove timeout from all currently muted members",
+      "subcommands": []
+    },
+    {
+      "name": "lockall",
+      "description": "Lock all channels in the server at once",
+      "subcommands": []
+    },
+    {
+      "name": "unlockall",
+      "description": "Unlock all channels in the server at once",
+      "subcommands": []
+    },
+    {
+      "name": "hideall",
+      "description": "Hide all channels from all members",
+      "subcommands": []
+    },
+    {
+      "name": "unhideall",
+      "description": "Unhide all channels and restore visibility",
+      "subcommands": []
+    },
+    {
+      "name": "unbanall",
+      "description": "Unban all banned users from the server",
+      "subcommands": []
+    },
+    {
+      "name": "list",
+      "description": "View various lists of members, roles, and server information",
+      "subcommands": [
+        {
+          "name": "admin",
+          "description": "List all members with Administrator permission"
+        },
+        {
+          "name": "mod",
+          "description": "List all members with Manage Messages or higher"
+        },
+        {
+          "name": "bot",
+          "description": "List all bot accounts in the server"
+        },
+        {
+          "name": "inrole",
+          "description": "List all members with a specific role"
+        },
+        {
+          "name": "booster",
+          "description": "List all server boosters"
+        },
+        {
+          "name": "roles",
+          "description": "List all roles in the server"
+        },
+        {
+          "name": "noroles",
+          "description": "List members with no roles"
+        },
+        {
+          "name": "muted",
+          "description": "List all currently timed-out members"
+        },
+        {
+          "name": "joinpos",
+          "description": "List members sorted by join position"
+        },
+        {
+          "name": "bans",
+          "description": "List all banned users"
+        }
+      ]
+    },
+    {
+      "name": "media",
+      "description": "Manage media-only channels",
+      "subcommands": [
+        {
+          "name": "channel",
+          "description": "Add or remove media-only channels"
+        }
+      ]
+    },
+    {
+      "name": "statusrole",
+      "description": "Auto-assign a role to members based on a status keyword",
+      "subcommands": [
+        {
+          "name": "role",
+          "description": "Configure the role to assign"
+        },
+        {
+          "name": "keyword",
+          "description": "Configure the status keyword to watch"
+        },
+        {
+          "name": "channel",
+          "description": "Configure the log channel"
+        }
+      ]
+    },
+    {
+      "name": "scan",
+      "description": "Quick server security scan — dangerous roles, bots, members, and webhooks",
+      "subcommands": []
+    },
+    {
+      "name": "scanadvanced",
+      "description": "Advanced paginated security scan with full details on all threats",
+      "subcommands": []
+    },
+    {
+      "name": "scanbots",
+      "description": "Scan all bots in the server for dangerous permissions",
+      "subcommands": []
+    },
+    {
+      "name": "scanwebhooks",
+      "description": "Scan all webhooks in the server for suspicious activity",
+      "subcommands": []
+    },
+    {
+      "name": "scanfull",
+      "description": "Full comprehensive security scan — roles, bots, members, webhooks, and risk score",
+      "subcommands": []
+    },
+    {
+      "name": "autofix",
+      "description": "Automatically remove dangerous permissions from roles and delete orphan webhooks (Owner only)",
+      "subcommands": []
+    },
+    {
+      "name": "scanroles",
+      "description": "Scan all server roles for dangerous permissions",
+      "subcommands": []
+    },
+    {
+      "name": "scanmembers",
+      "description": "Scan all human members for dangerous permissions",
+      "subcommands": []
+    },
+    {
+      "name": "scanrisk",
+      "description": "Calculate a security risk score with detailed recommendations",
+      "subcommands": []
+    },
+    {
+      "name": "channel",
+      "description": "Manage server channels — create, delete, rename, move or schedule deletion",
+      "subcommands": [
+        {
+          "name": "create",
+          "description": "Create a new channel in this server"
+        },
+        {
+          "name": "delete",
+          "description": "Delete a channel after a 3-second delay"
+        },
+        {
+          "name": "rename",
+          "description": "Rename a channel"
+        },
+        {
+          "name": "transfer",
+          "description": "Move a channel into a different category"
+        },
+        {
+          "name": "deleteafter",
+          "description": "Schedule a channel for deletion after a set duration (5s–7d)"
+        }
+      ]
+    }
+  ],
+  "music": [
+    {
+      "name": "play",
+      "description": "Play a song or playlist by name or URL",
+      "subcommands": []
+    },
+    {
+      "name": "search",
+      "description": "Search for a song and pick from a results list",
+      "subcommands": []
+    },
+    {
+      "name": "pause",
+      "description": "Pause the currently playing song",
+      "subcommands": []
+    },
+    {
+      "name": "resume",
+      "description": "Resume paused music playback",
+      "subcommands": []
+    },
+    {
+      "name": "skip",
+      "description": "Skip the current song and play the next one",
+      "subcommands": []
+    },
+    {
+      "name": "forceskip",
+      "description": "Force-skip the current song (bypasses vote skip)",
+      "subcommands": []
+    },
+    {
+      "name": "skipto",
+      "description": "Skip directly to a position in the queue",
+      "subcommands": []
+    },
+    {
+      "name": "stop",
+      "description": "Stop playback, clear the queue and leave the channel",
+      "subcommands": []
+    },
+    {
+      "name": "queue",
+      "description": "Show the current music queue",
+      "subcommands": []
+    },
+    {
+      "name": "nowplaying",
+      "description": "Show details about the currently playing song",
+      "subcommands": []
+    },
+    {
+      "name": "volume",
+      "description": "Set the playback volume (0-200)",
+      "subcommands": []
+    },
+    {
+      "name": "loop",
+      "description": "Set the loop mode for playback",
+      "subcommands": []
+    },
+    {
+      "name": "shuffle",
+      "description": "Shuffle all songs in the current queue",
+      "subcommands": []
+    },
+    {
+      "name": "remove",
+      "description": "Remove a specific song from the queue",
+      "subcommands": []
+    },
+    {
+      "name": "seek",
+      "description": "Seek to a specific time in the current song",
+      "subcommands": []
+    },
+    {
+      "name": "filter",
+      "description": "Apply an audio filter to the player",
+      "subcommands": []
+    },
+    {
+      "name": "clear",
+      "description": "Clear all songs from the music queue",
+      "subcommands": []
+    },
+    {
+      "name": "lyrics",
+      "description": "Show lyrics for the current or a specified song",
+      "subcommands": []
+    },
+    {
+      "name": "grab",
+      "description": "Save the current song info to your DMs",
+      "subcommands": []
+    },
+    {
+      "name": "history",
+      "description": "Show the recent music playback history",
+      "subcommands": []
+    },
+    {
+      "name": "join",
+      "description": "Make the bot join your current voice channel",
+      "subcommands": []
+    },
+    {
+      "name": "leave",
+      "description": "Make the bot leave the voice channel",
+      "subcommands": []
+    },
+    {
+      "name": "autoplay",
+      "description": "Toggle autoplay — automatically queues related songs when the queue ends",
+      "subcommands": []
+    },
+    {
+      "name": "247",
+      "description": "Toggle 24/7 mode — keeps the bot in voice even when the channel is empty",
+      "subcommands": []
+    },
+    {
+      "name": "source",
+      "description": "Choose which music source the bot should use for new searches",
+      "subcommands": []
+    }
+  ],
+  "permit": [
+    {
+      "name": "ignore",
+      "description": "Block users, channels, roles, or commands from interacting with the bot",
+      "subcommands": [
+        {
+          "name": "user",
+          "description": "Ignore specific users"
+        },
+        {
+          "name": "channel",
+          "description": "Ignore specific channels"
+        },
+        {
+          "name": "role",
+          "description": "Ignore specific roles"
+        },
+        {
+          "name": "command",
+          "description": "Disable specific commands"
+        },
+        {
+          "name": "bypass",
+          "description": "Users exempt from the ignore system"
+        }
+      ]
+    },
+    {
+      "name": "trusted",
+      "description": "Manage trusted users who can bypass certain restrictions",
+      "subcommands": [
+        {
+          "name": "add",
+          "description": "Add a trusted user"
+        },
+        {
+          "name": "remove",
+          "description": "Remove a trusted user"
+        },
+        {
+          "name": "show",
+          "description": "List all trusted users"
+        },
+        {
+          "name": "reset",
+          "description": "Clear all trusted users"
+        }
+      ]
+    }
+  ],
+  "pfps": [
+    {
+      "name": "pfps",
+      "description": "Get random profile pictures — boys, girls, anime, banners, cars, besties, and more",
+      "subcommands": [
+        {
+          "name": "boys",
+          "description": "Get a random boys profile picture or GIF"
+        },
+        {
+          "name": "girls",
+          "description": "Get a random girls profile picture or GIF"
+        },
+        {
+          "name": "anime",
+          "description": "Get a random anime profile picture"
+        },
+        {
+          "name": "banner",
+          "description": "Get a random banner image"
+        },
+        {
+          "name": "cars",
+          "description": "Get a random car profile picture"
+        },
+        {
+          "name": "besties",
+          "description": "Get a random besties profile picture"
+        },
+        {
+          "name": "random",
+          "description": "Get a completely random profile picture"
+        },
+        {
+          "name": "aesthetic",
+          "description": "Get a random aesthetic profile picture"
+        }
+      ]
+    }
+  ],
+  "playlist": [
+    {
+      "name": "playlist",
+      "description": "Manage your saved playlists",
+      "subcommands": [
+        {
+          "name": "create",
+          "description": "Create a new empty playlist"
+        },
+        {
+          "name": "delete",
+          "description": "Delete one of your saved playlists"
+        },
+        {
+          "name": "list",
+          "description": "List all of your saved playlists"
+        },
+        {
+          "name": "info",
+          "description": "View the track list for a playlist"
+        },
+        {
+          "name": "load",
+          "description": "Load and play a saved playlist"
+        },
+        {
+          "name": "rename",
+          "description": "Rename an existing playlist"
+        },
+        {
+          "name": "share",
+          "description": "Share a playlist with another user"
+        }
+      ]
+    },
+    {
+      "name": "plcreate",
+      "description": "Create a new empty playlist",
+      "subcommands": []
+    },
+    {
+      "name": "pldelete",
+      "description": "Delete one of your saved playlists",
+      "subcommands": []
+    },
+    {
+      "name": "pllist",
+      "description": "List all of your saved playlists",
+      "subcommands": []
+    },
+    {
+      "name": "plinfo",
+      "description": "View the track list for one of your playlists",
+      "subcommands": []
+    },
+    {
+      "name": "plload",
+      "description": "Load and play a saved playlist",
+      "subcommands": []
+    },
+    {
+      "name": "plrename",
+      "description": "Rename an existing playlist",
+      "subcommands": []
+    },
+    {
+      "name": "plshare",
+      "description": "Share one of your playlists with another user",
+      "subcommands": []
+    },
+    {
+      "name": "pladd",
+      "description": "Add a song to one of your saved playlists",
+      "subcommands": []
+    },
+    {
+      "name": "pladdcurrent",
+      "description": "Add the currently playing song to one of your playlists",
+      "subcommands": []
+    },
+    {
+      "name": "pladdmulti",
+      "description": "Add multiple songs from the queue to one of your playlists",
+      "subcommands": []
+    },
+    {
+      "name": "removetrack",
+      "description": "Remove a specific track from one of your playlists",
+      "subcommands": []
+    }
+  ],
+  "premium": [
+    {
+      "name": "addpremium",
+      "description": "Add premium to a server (Owner only)",
+      "subcommands": []
+    },
+    {
+      "name": "removepremium",
+      "description": "Remove premium from a server (Owner only)",
+      "subcommands": []
+    },
+    {
+      "name": "updatepremium",
+      "description": "Update premium settings for a server (Owner only)",
+      "subcommands": []
+    },
+    {
+      "name": "listpremium",
+      "description": "List all servers with premium active (Owner only)",
+      "subcommands": []
+    }
+  ],
+  "ticket": [
+    {
+      "name": "ticket",
+      "description": "Ticket support system — set up and manage server tickets",
+      "subcommands": [
+        {
+          "name": "setup",
+          "description": "Set up the ticket system for this server"
+        },
+        {
+          "name": "status",
+          "description": "View the current ticket system status"
+        },
+        {
+          "name": "reset",
+          "description": "Reset all ticket system settings to defaults"
+        }
+      ]
+    }
+  ],
+  "voice": [
+    {
+      "name": "vcmute",
+      "description": "Server-mute a member in a voice channel",
+      "subcommands": []
+    },
+    {
+      "name": "vcunmute",
+      "description": "Remove server-mute from a member in voice",
+      "subcommands": []
+    },
+    {
+      "name": "vcmuteall",
+      "description": "Server-mute all members in a voice channel",
+      "subcommands": []
+    },
+    {
+      "name": "vcunmuteall",
+      "description": "Remove server-mute from all members in voice",
+      "subcommands": []
+    },
+    {
+      "name": "vcdeafen",
+      "description": "Server-deafen a member in a voice channel",
+      "subcommands": []
+    },
+    {
+      "name": "vcundeafen",
+      "description": "Remove server-deafen from a member in voice",
+      "subcommands": []
+    },
+    {
+      "name": "vcdeafenall",
+      "description": "Server-deafen all members in a voice channel",
+      "subcommands": []
+    },
+    {
+      "name": "vcundeafenall",
+      "description": "Remove server-deafen from all members in voice",
+      "subcommands": []
+    },
+    {
+      "name": "vckick",
+      "description": "Kick a member from their voice channel",
+      "subcommands": []
+    },
+    {
+      "name": "vckickall",
+      "description": "Kick all members from a voice channel",
+      "subcommands": []
+    },
+    {
+      "name": "vcmoveall",
+      "description": "Move all members from one voice channel to another",
+      "subcommands": []
+    },
+    {
+      "name": "vcpull",
+      "description": "Pull a member into your current voice channel",
+      "subcommands": []
+    },
+    {
+      "name": "vcpush",
+      "description": "Push a member out of your voice channel",
+      "subcommands": []
+    },
+    {
+      "name": "vcrole",
+      "description": "Set the role required to join a voice channel",
+      "subcommands": []
+    },
+    {
+      "name": "vclist",
+      "description": "List all members currently in voice channels",
+      "subcommands": []
+    }
+  ],
+  "welcomer": [
+    {
+      "name": "autorole",
+      "description": "Manage roles automatically given to humans or bots on join",
+      "subcommands": [
+        {
+          "name": "humans",
+          "description": "Manage auto-roles for human members"
+        },
+        {
+          "name": "bots",
+          "description": "Manage auto-roles for bot accounts on join"
+        }
+      ]
+    },
+    {
+      "name": "greet",
+      "description": "Manage welcome/greet messages for this server",
+      "subcommands": [
+        {
+          "name": "config",
+          "description": "View all configured greet messages"
+        },
+        {
+          "name": "create",
+          "description": "Create a new greet message"
+        },
+        {
+          "name": "delete",
+          "description": "Delete a greet message"
+        },
+        {
+          "name": "enable",
+          "description": "Enable a greet message"
+        },
+        {
+          "name": "disable",
+          "description": "Disable a greet message"
+        },
+        {
+          "name": "test",
+          "description": "Send a test greet message"
+        },
+        {
+          "name": "channel",
+          "description": "Set or reset the channel for a greet message"
+        },
+        {
+          "name": "autodelete",
+          "description": "Auto-delete a greet message after N seconds (3–300 or off)"
+        }
+      ]
+    },
+    {
+      "name": "leavemsg",
+      "description": "Manage the leave message sent when members leave the server",
+      "subcommands": [
+        {
+          "name": "show",
+          "description": "View current leave message configuration"
+        },
+        {
+          "name": "test",
+          "description": "Send a test leave message"
+        },
+        {
+          "name": "enable",
+          "description": "Enable leave messages"
+        },
+        {
+          "name": "disable",
+          "description": "Disable leave messages"
+        },
+        {
+          "name": "reset",
+          "description": "Reset all leave message settings"
+        },
+        {
+          "name": "set",
+          "description": "Set the leave message channel and text"
+        }
+      ]
+    },
+    {
+      "name": "boostgreet",
+      "description": "Manage the boost greeting sent when members boost the server",
+      "subcommands": [
+        {
+          "name": "show",
+          "description": "View current boost greet configuration"
+        },
+        {
+          "name": "test",
+          "description": "Send a test boost greet message"
+        },
+        {
+          "name": "enable",
+          "description": "Enable boost greet messages"
+        },
+        {
+          "name": "disable",
+          "description": "Disable boost greet messages"
+        },
+        {
+          "name": "reset",
+          "description": "Reset all boost greet settings"
+        },
+        {
+          "name": "set",
+          "description": "Set the boost greet channel and message"
+        }
+      ]
+    },
+    {
+      "name": "joindm",
+      "description": "Manage the DM sent to new members when they join the server",
+      "subcommands": [
+        {
+          "name": "show",
+          "description": "View current join DM configuration"
+        },
+        {
+          "name": "test",
+          "description": "Send a test join DM to yourself"
+        },
+        {
+          "name": "enable",
+          "description": "Enable join DMs"
+        },
+        {
+          "name": "disable",
+          "description": "Disable join DMs"
+        },
+        {
+          "name": "reset",
+          "description": "Reset all join DM settings"
+        },
+        {
+          "name": "set",
+          "description": "Set the DM message sent to new members on join"
+        }
+      ]
+    }
+  ]
+};</script>
+
+<script>
+(function(){
+  // Inject avatar everywhere
+  document.querySelectorAll('img[data-lily]').forEach(img => img.src = window.__LILY_AVATAR);
+  document.getElementById('favicon').href = window.__LILY_AVATAR;
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // ─── Hash router ──────────────────────────────────────────────────────────
+  function showPage() {
+    const h = (location.hash || '#home').slice(1).split('?')[0] || 'home';
+    const valid = ['home','commands','dashboard','terms','privacy'].includes(h) ? h : 'home';
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('show'));
+    document.getElementById('page-' + valid).classList.add('show');
+    document.querySelectorAll('.navlink').forEach(a => a.classList.toggle('active', a.dataset.nav === valid));
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    if (valid === 'home') initHome();
+    if (valid === 'commands') initCommands();
+    if (valid === 'dashboard') initDashboard();
+  }
+  window.addEventListener('hashchange', showPage);
+
+  // ─── HOME ─────────────────────────────────────────────────────────────────
+  let homeInited = false;
+  function initHome() {
+    if (homeInited) return; homeInited = true;
+    // Feature cards
+    const features = [
+      ['🛡','Antinuke','Z+ lockdown, wall role, betrayal guard, vanity protection, auto-recovery, and per-action heat limits.'],
+      ['⚖','Automod','12 filters: spam, caps, links, invites, mass-mention, NSFW, attachments, zalgo, char limits, and more.'],
+      ['🎵','Music','High-quality music with playlists, filters, queue control, lyrics and 24/7 mode powered by Lavalink.'],
+      ['🎫','Tickets','Beautifully designed ticket flows for support, applications, reports — fully configurable.'],
+      ['👋','Welcomer','Stunning welcome cards, custom messages, autoroles and join DMs that make new members feel at home.'],
+      ['🔊','Join-to-Create','Dynamic voice channels users create on demand — own, lock, kick, claim and rename in one tap.'],
+      ['📜','Logs','Detailed audit logs for messages, members, voice, roles and moderation — split across channels.'],
+      ['🎨','Custom Roles','Let boosters claim a private role with their own name, color and icon — managed automatically.'],
+      ['🎁','Giveaways','Run flawless giveaways with role/server requirements, multiple winners and reroll support.'],
+    ];
+    document.getElementById('feat-grid').innerHTML = features.map(([i,t,d]) => `
+      <div class="card rounded-2xl p-6 reveal">
+        <div class="w-11 h-11 rounded-xl bg-pink-500/10 ring-1 ring-pink-500/30 flex items-center justify-center text-pink-400 mb-4">${i}</div>
+        <h3 class="font-semibold text-lg">${t}</h3>
+        <p class="text-sm text-neutral-400 mt-2">${d}</p>
+      </div>`).join('');
+
+    // Counters + reveals
+    const fmt = n => n.toLocaleString();
+    const animate = (el, target) => {
+      const start = performance.now(); const dur = 1600;
+      function tick(t){ const p = Math.min(1,(t-start)/dur); const e = 1-Math.pow(1-p,3);
+        el.textContent = fmt(Math.floor(e*target)); if(p<1) requestAnimationFrame(tick); }
+      requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        if (e.target.dataset.count) { animate(e.target, parseInt(e.target.dataset.count, 10)); io.unobserve(e.target); }
+        else { e.target.classList.add('in'); }
+      });
+    }, { threshold: 0.2 });
+    document.querySelectorAll('#page-home [data-count]').forEach(c => io.observe(c));
+    document.querySelectorAll('#page-home .reveal').forEach(c => io.observe(c));
+  }
+
+  // ─── COMMANDS ─────────────────────────────────────────────────────────────
+  const CATEGORY_META = {
+    antinuke:{label:'Antinuke',icon:'🛡',color:'text-rose-300'}, automod:{label:'Automod',icon:'⚖',color:'text-amber-300'},
+    config:{label:'Config',icon:'⚙',color:'text-sky-300'}, fun:{label:'Fun',icon:'🎲',color:'text-pink-300'},
+    giveaway:{label:'Giveaway',icon:'🎁',color:'text-fuchsia-300'}, information:{label:'Information',icon:'ℹ',color:'text-blue-300'},
+    j2c:{label:'Join-to-Create',icon:'🔊',color:'text-emerald-300'}, moderation:{label:'Moderation',icon:'🛠',color:'text-red-300'},
+    music:{label:'Music',icon:'🎵',color:'text-indigo-300'}, permit:{label:'Permit',icon:'🔑',color:'text-yellow-300'},
+    pfps:{label:'PFPs',icon:'🖼',color:'text-teal-300'}, playlist:{label:'Playlist',icon:'📀',color:'text-purple-300'},
+    premium:{label:'Premium',icon:'⭐',color:'text-amber-200'}, ticket:{label:'Tickets',icon:'🎫',color:'text-cyan-300'},
+    voice:{label:'Voice',icon:'🗣',color:'text-lime-300'}, welcomer:{label:'Welcomer',icon:'👋',color:'text-orange-300'},
+  };
+  let cmdInited = false, cmdActive = 'all', cmdQ = '';
+  function initCommands() {
+    if (cmdInited) { renderCmds(); return; }
+    cmdInited = true;
+    document.getElementById('cmd-search').addEventListener('input', e => { cmdQ = e.target.value.trim().toLowerCase(); renderCmds(); });
+    buildCmdChips(); renderCmds();
+  }
+  function buildCmdChips() {
+    const chips = document.getElementById('cmd-chips');
+    const cats = ['all', ...Object.keys(window.__LILY_COMMANDS)];
+    chips.innerHTML = cats.map(c => {
+      const meta = c==='all' ? {label:'All',icon:'✨'} : (CATEGORY_META[c] || {label:c,icon:'📦'});
+      const count = c==='all' ? Object.values(window.__LILY_COMMANDS).reduce((a,b)=>a+b.length,0) : window.__LILY_COMMANDS[c].length;
+      return `<button data-cat="${c}" class="chip rounded-full px-4 py-2 text-sm transition ${c===cmdActive?'active':''}">${meta.icon} ${meta.label} <span class="opacity-60 ml-1">${count}</span></button>`;
+    }).join('');
+    chips.querySelectorAll('button').forEach(b => b.onclick = () => { cmdActive = b.dataset.cat; buildCmdChips(); renderCmds(); });
+  }
+  function renderCmds() {
+    const grid = document.getElementById('cmd-grid'); const empty = document.getElementById('cmd-empty');
+    const cats = cmdActive==='all' ? Object.keys(window.__LILY_COMMANDS) : [cmdActive];
+    let cards = [];
+    for (const c of cats) {
+      const meta = CATEGORY_META[c] || {label:c,icon:'📦',color:'text-neutral-300'};
+      for (const cmd of (window.__LILY_COMMANDS[c]||[])) {
+        const hay = (cmd.name + ' ' + (cmd.description||'') + ' ' + cmd.subcommands.map(s=>s.name).join(' ')).toLowerCase();
+        if (cmdQ && !hay.includes(cmdQ)) continue;
+        cards.push(`
+          <div class="card rounded-2xl p-5">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xs uppercase tracking-widest ${meta.color}">${meta.icon} ${meta.label}</div>
+                <div class="mt-1 font-mono text-lg font-semibold">/${cmd.name}</div>
+              </div>
+              ${cmd.subcommands.length ? `<span class="text-xs text-neutral-500">${cmd.subcommands.length} subcommand${cmd.subcommands.length===1?'':'s'}</span>` : ''}
+            </div>
+            <p class="mt-3 text-sm text-neutral-400">${esc(cmd.description||'No description')}</p>
+            ${cmd.subcommands.length ? `
+              <details class="mt-4">
+                <summary class="cursor-pointer text-xs text-neutral-400 hover:text-white inline-flex items-center gap-1">
+                  <span class="chev">›</span> View subcommands
+                </summary>
+                <div class="mt-3 space-y-2">
+                  ${cmd.subcommands.map(s => `
+                    <div class="rounded-lg bg-white/5 border border-white/5 px-3 py-2">
+                      <div class="font-mono text-sm text-pink-300">/${cmd.name} ${s.name}</div>
+                      <div class="text-xs text-neutral-400 mt-0.5">${esc(s.description||'')}</div>
+                    </div>`).join('')}
+                </div>
+              </details>` : ''}
+          </div>`);
+      }
+    }
+    grid.innerHTML = cards.join('');
+    empty.classList.toggle('hidden', cards.length>0);
+    document.getElementById('cmd-count').textContent = cards.length ? `${cards.length} result${cards.length===1?'':'s'}` : '';
+  }
+
+  // ─── DASHBOARD ────────────────────────────────────────────────────────────
+  const DEFAULT_SERVERS = [
+    { id:'g_1', name:'Lily HQ', icon:'🌸', members:12480 },
+    { id:'g_2', name:'Pixel Pals', icon:'🎮', members:3270 },
+    { id:'g_3', name:'Lo-fi Lounge', icon:'🎧', members:8910 },
+    { id:'g_4', name:'Build Club', icon:'🛠', members:2150 },
+  ];
+  const SECTIONS = [
+    { id:'antinuke', label:'Antinuke', icon:'🛡', desc:'Server-killing protection. The most dangerous actions get caught in milliseconds.', fields:[
+      {id:'enabled',type:'toggle',label:'Antinuke enabled'},{id:'zplus',type:'toggle',label:'Z+ maximum lockdown'},
+      {id:'wallRole',type:'toggle',label:'Wall role active'},{id:'autoRecovery',type:'toggle',label:'Auto-recovery of nuked changes'},
+      {id:'betrayalGuard',type:'toggle',label:'Betrayal guard'},{id:'vanityGuard',type:'toggle',label:'Vanity URL guard'},
+      {id:'logChannel',type:'text',label:'Log channel ID',placeholder:'#antinuke-logs or 123456…'},
+      {id:'limitPerMin',type:'number',label:'Actions per minute before trigger',min:1,max:60,default:6},
+    ]},
+    { id:'automod', label:'Automod', icon:'⚖', desc:'Twelve filters keep chat clean — turn each on independently.', fields:[
+      {id:'enabled',type:'toggle',label:'Automod enabled'},{id:'antispam',type:'toggle',label:'Anti spam'},
+      {id:'anticaps',type:'toggle',label:'Anti caps'},{id:'antilink',type:'toggle',label:'Anti link'},
+      {id:'antiinvite',type:'toggle',label:'Anti invite'},{id:'antimassmention',type:'toggle',label:'Anti mass mention'},
+      {id:'antiemojispam',type:'toggle',label:'Anti emoji spam'},{id:'antinsfwlink',type:'toggle',label:'Anti NSFW link'},
+      {id:'antiattachmentspam',type:'toggle',label:'Anti attachment spam'},{id:'antizalgo',type:'toggle',label:'Anti zalgo'},
+      {id:'similarmessage',type:'toggle',label:'Similar message spam'},{id:'newlinespam',type:'toggle',label:'New-line spam'},
+      {id:'charlimit',type:'number',label:'Character limit',min:1,max:4000,default:1000},
+      {id:'punishment',type:'select',label:'Default punishment',options:['warn','timeout','kick','ban']},
+    ]},
+    { id:'welcomer', label:'Welcomer', icon:'👋', desc:'Greet new members with custom messages, autoroles and DMs.', fields:[
+      {id:'enabled',type:'toggle',label:'Welcomer enabled'},{id:'channel',type:'text',label:'Welcome channel',placeholder:'#welcome'},
+      {id:'message',type:'textarea',label:'Welcome message',placeholder:'Welcome {user} to {server}!'},
+      {id:'card',type:'toggle',label:'Send welcome card'},{id:'dm',type:'toggle',label:'Also DM the new member'},
+      {id:'autorole',type:'text',label:'Auto-role ID',placeholder:'Role ID to assign'},
+    ]},
+    { id:'tickets', label:'Tickets', icon:'🎫', desc:'Set up support, applications, and report tickets in seconds.', fields:[
+      {id:'enabled',type:'toggle',label:'Ticket system enabled'},{id:'category',type:'text',label:'Tickets category ID',placeholder:'Category for new tickets'},
+      {id:'support',type:'text',label:'Support role ID',placeholder:'Role pinged on new tickets'},
+      {id:'logs',type:'text',label:'Logs channel',placeholder:'#ticket-logs'},
+      {id:'transcripts',type:'toggle',label:'Save transcripts on close'},
+    ]},
+    { id:'j2c', label:'Join-to-Create', icon:'🔊', desc:'Members create their own voice channels on demand.', fields:[
+      {id:'enabled',type:'toggle',label:'Join-to-Create enabled'},{id:'lobby',type:'text',label:'Lobby voice channel',placeholder:'Voice channel ID'},
+      {id:'category',type:'text',label:'Channels category',placeholder:'Category ID'},
+      {id:'limit',type:'number',label:'Default user limit',min:0,max:99,default:0},
+    ]},
+    { id:'logs', label:'Logs', icon:'📜', desc:'Audit logs split across dedicated channels.', fields:[
+      {id:'enabled',type:'toggle',label:'Logging enabled'},{id:'message',type:'text',label:'Message logs channel',placeholder:'#message-logs'},
+      {id:'member',type:'text',label:'Member logs channel',placeholder:'#member-logs'},
+      {id:'voice',type:'text',label:'Voice logs channel',placeholder:'#voice-logs'},
+      {id:'role',type:'text',label:'Role logs channel',placeholder:'#role-logs'},
+      {id:'moderation',type:'text',label:'Mod logs channel',placeholder:'#mod-logs'},
+    ]},
+    { id:'customrole', label:'Custom Roles', icon:'🎨', desc:'Boosters claim a private role with their own name and color.', fields:[
+      {id:'enabled',type:'toggle',label:'Custom roles enabled'},{id:'baserole',type:'text',label:'Position base role',placeholder:'New roles placed below this'},
+      {id:'requiresBoost',type:'toggle',label:'Require server boost'},
+    ]},
+    { id:'music', label:'Music', icon:'🎵', desc:'High-quality music with playlists, filters and 24/7 mode.', fields:[
+      {id:'enabled',type:'toggle',label:'Music enabled'},{id:'always247',type:'toggle',label:'24/7 mode'},
+      {id:'autoplay',type:'toggle',label:'Autoplay'},{id:'defaultVolume',type:'number',label:'Default volume (%)',min:0,max:200,default:100},
+      {id:'djRole',type:'text',label:'DJ role ID',placeholder:'Optional DJ role'},
+    ]},
+    { id:'giveaway', label:'Giveaway', icon:'🎁', desc:'Run flawless giveaways with role and server requirements.', fields:[
+      {id:'enabled',type:'toggle',label:'Giveaway module enabled'},{id:'manager',type:'text',label:'Manager role ID',placeholder:'Who can host giveaways'},
+      {id:'pingRole',type:'text',label:'Default ping role',placeholder:'Optional'},
+    ]},
+    { id:'autoresponder', label:'Autoresponder', icon:'💬', desc:'Auto-replies to keywords in chat.', fields:[
+      {id:'enabled',type:'toggle',label:'Autoresponder enabled'},{id:'matchMode',type:'select',label:'Match mode',options:['exact','contains','startsWith','regex']},
+    ]},
+    { id:'config', label:'Server Config', icon:'⚙', desc:'Per-server prefix, color, and language.', fields:[
+      {id:'prefix',type:'text',label:'Command prefix',default:',',placeholder:','},
+      {id:'color',type:'text',label:'Embed color (hex)',default:'#ec4899',placeholder:'#ec4899'},
+      {id:'language',type:'select',label:'Language',options:['en','es','fr','de','pt','hi']},
+      {id:'antibot',type:'toggle',label:'Block other bots from joining'},
+      {id:'sticky',type:'toggle',label:'Sticky messages enabled'},
+    ]},
+  ];
+
+  const STORE_KEY = 'lily.dashboard.v1';
+  const lsLoad = () => { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; } };
+  const lsSave = (s) => { try { localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch {} };
+  let dashState = null, dashInited = false;
+
+  function initDashboard() {
+    if (!dashState) {
+      dashState = lsLoad();
+      if (!dashState.servers) dashState.servers = DEFAULT_SERVERS;
+      if (!dashState.activeServer) dashState.activeServer = dashState.servers[0].id;
+      if (!dashState.config) dashState.config = {};
+      if (!dashState.activeSection) dashState.activeSection = 'antinuke';
+      lsSave(dashState);
+    }
+    if (!dashInited) {
+      dashInited = true;
+      document.getElementById('add-server').onclick = () => {
+        const name = prompt('Server name:'); if (!name) return;
+        const id = 'g_' + Math.random().toString(36).slice(2,8);
+        dashState.servers.push({ id, name, icon:'✨', members: Math.floor(50 + Math.random()*5000) });
+        dashState.activeServer = id; lsSave(dashState); renderAll(); showToast(`Added · ${name}`);
+      };
+    }
+    renderAll();
+  }
+  function getCfg(sid, secId){ dashState.config[sid] = dashState.config[sid] || {}; dashState.config[sid][secId] = dashState.config[sid][secId] || {}; return dashState.config[sid][secId]; }
+  function setField(secId, fid, v){ const cfg = getCfg(dashState.activeServer, secId); cfg[fid] = v; lsSave(dashState);
+    showToast(v===true?`Enabled · ${labelFor(secId,fid)}` : v===false?`Disabled · ${labelFor(secId,fid)}` : `Saved · ${labelFor(secId,fid)}`);
+    renderSidebar();
+  }
+  function labelFor(secId, fid){ const s = SECTIONS.find(x=>x.id===secId); const f = s?.fields.find(x=>x.id===fid); return (s?.label||'')+' · '+(f?.label||fid); }
+  function currentServerName(){ return dashState.servers.find(s=>s.id===dashState.activeServer)?.name || '—'; }
+
+  function renderServers(){
+    const sel = document.getElementById('server-select');
+    sel.innerHTML = dashState.servers.map(s => `<option value="${s.id}" ${s.id===dashState.activeServer?'selected':''}>${s.icon||'🟣'} ${esc(s.name)}${s.members?` · ${s.members.toLocaleString()} members`:''}</option>`).join('');
+    sel.onchange = e => { dashState.activeServer = e.target.value; lsSave(dashState); renderAll(); };
+  }
+  function renderSidebar(){
+    const sb = document.getElementById('sidebar');
+    sb.innerHTML = SECTIONS.map(sec => {
+      const cfg = getCfg(dashState.activeServer, sec.id); const on = cfg.enabled===true;
+      return `<button data-sec="${sec.id}" class="nav-item w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 ${dashState.activeSection===sec.id?'active':''}">
+        <span class="text-lg w-6 text-center">${sec.icon}</span>
+        <span class="flex-1 text-sm font-medium">${sec.label}</span>
+        ${on?'<span class="text-[10px] uppercase tracking-widest text-emerald-400">on</span>':'<span class="text-[10px] uppercase tracking-widest text-neutral-600">off</span>'}
+      </button>`;
+    }).join('');
+    sb.querySelectorAll('button').forEach(b => b.onclick = () => { dashState.activeSection = b.dataset.sec; lsSave(dashState); renderMain(); renderSidebar(); });
+  }
+  function fieldHtml(secId, f, cfg){
+    const v = cfg[f.id] !== undefined ? cfg[f.id] : (f.default !== undefined ? f.default : (f.type==='toggle'?false:''));
+    if (f.type==='toggle') return `<div class="flex items-center justify-between gap-3 py-1"><div><div class="text-sm font-medium">${f.label}</div></div><div data-toggle="${f.id}" class="switch ${v?'on':''}"></div></div>`;
+    if (f.type==='select') return `<label class="block"><div class="text-sm font-medium mb-1">${f.label}</div><select data-input="${f.id}" class="input">${f.options.map(o=>`<option value="${o}" ${v===o?'selected':''}>${o}</option>`).join('')}</select></label>`;
+    if (f.type==='textarea') return `<label class="block md:col-span-2"><div class="text-sm font-medium mb-1">${f.label}</div><textarea data-input="${f.id}" rows="3" class="input" placeholder="${f.placeholder||''}">${esc(v||'')}</textarea></label>`;
+    return `<label class="block"><div class="text-sm font-medium mb-1">${f.label}</div><input data-input="${f.id}" type="${f.type==='number'?'number':'text'}" ${f.min!==undefined?`min="${f.min}"`:''} ${f.max!==undefined?`max="${f.max}"`:''} class="input" placeholder="${f.placeholder||''}" value="${esc(String(v||''))}" /></label>`;
+  }
+  function renderMain(){
+    const sec = SECTIONS.find(s => s.id === dashState.activeSection);
+    const cfg = getCfg(dashState.activeServer, sec.id);
+    const main = document.getElementById('dash-main');
+    const tCount = sec.fields.filter(f=>f.type==='toggle').length;
+    const onCount = sec.fields.filter(f=>f.type==='toggle' && cfg[f.id]===true).length;
+    const pct = tCount ? Math.round(onCount/tCount*100) : 0;
+    main.innerHTML = `
+      <div class="panel rounded-2xl p-6">
+        <div class="flex items-start justify-between gap-6">
+          <div class="flex-1">
+            <div class="text-xs uppercase tracking-widest text-neutral-400">${sec.label}</div>
+            <h2 class="mt-1 text-2xl font-bold">${sec.icon} ${sec.label} · <span class="text-neutral-500 font-normal">${esc(currentServerName())}</span></h2>
+            <p class="mt-2 text-sm text-neutral-400">${sec.desc}</p>
+          </div>
+          <div class="text-right min-w-[200px]">
+            <div class="text-xs text-neutral-500">${onCount}/${tCount} toggles on</div>
+            <div class="progress mt-2"><div style="width:${pct}%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel rounded-2xl p-6">
+        <div class="grid md:grid-cols-2 gap-x-8 gap-y-5">${sec.fields.map(f=>fieldHtml(sec.id,f,cfg)).join('')}</div>
+      </div>
+      <div class="panel rounded-2xl p-5 flex flex-wrap items-center gap-3 text-sm">
+        <span class="text-neutral-400">Quick actions:</span>
+        <button data-action="enable-all" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition">Enable all toggles</button>
+        <button data-action="disable-all" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition">Disable all toggles</button>
+        <button data-action="reset" class="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 transition ml-auto">Reset section</button>
+      </div>`;
+
+    main.querySelectorAll('[data-toggle]').forEach(el => el.onclick = () => {
+      const fid = el.dataset.toggle; const cur = cfg[fid]===true;
+      el.classList.toggle('on', !cur); setField(sec.id, fid, !cur); renderMain();
+    });
+    main.querySelectorAll('[data-input]').forEach(el => {
+      el.oninput = e => { const v = el.tagName==='SELECT'?e.target.value:(el.type==='number'?Number(e.target.value):e.target.value); cfg[el.dataset.input] = v; lsSave(dashState); };
+      el.onblur  = e => { const v = el.tagName==='SELECT'?e.target.value:(el.type==='number'?Number(e.target.value):e.target.value); setField(sec.id, el.dataset.input, v); };
+    });
+    main.querySelector('[data-action="enable-all"]').onclick = () => { sec.fields.filter(f=>f.type==='toggle').forEach(f=>cfg[f.id]=true); lsSave(dashState); renderMain(); renderSidebar(); showToast(`All ${sec.label} toggles on`); };
+    main.querySelector('[data-action="disable-all"]').onclick = () => { sec.fields.filter(f=>f.type==='toggle').forEach(f=>cfg[f.id]=false); lsSave(dashState); renderMain(); renderSidebar(); showToast(`All ${sec.label} toggles off`); };
+    main.querySelector('[data-action="reset"]').onclick = () => { delete dashState.config[dashState.activeServer][sec.id]; lsSave(dashState); renderMain(); renderSidebar(); showToast(`${sec.label} reset`); };
+  }
+  function renderAll(){ renderServers(); renderSidebar(); renderMain(); }
+
+  // ─── Toast ────────────────────────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('show'),1600); }
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+  function esc(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  // Boot
+  if (!location.hash) location.hash = '#home';
+  showPage();
+})();
+</script>
+
+</body>
+</html>
